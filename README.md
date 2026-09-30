@@ -21,3 +21,12 @@ Infografía de una lámina (cálculo diferencial aplicado): cómo la derivada `C
 | Forma óptima | `h = V/(πr*²) = 2r*` (altura = diámetro) |
 
 Las latas de comparación (+8 % y +27 % de lámina) usan `r = 0.75 r*` y `r = 1.6 r*`; el porcentaje no depende de `V`.
+
+## Versión 2 (`v2/`)
+
+Segunda iteración con paleta crema / azul marino / rojo / amarillo y tipografía condensada.
+
+- `v2/infografia-lata-v2.html` — lámina autocontenida (fuentes incrustadas, funciona sin internet).
+- `v2/infografia-lata-v2.pdf` — el mismo HTML impreso en una sola página (1520 × 1175 px).
+- `v2/fuente.html` — fuente editable (carga las fuentes desde Google Fonts).
+- `v2/exportar.py` — regenera los dos archivos: `python3 v2/exportar.py` (requiere curl, node y Playwright con Chromium).
