@@ -3,6 +3,7 @@
 Infografía de una lámina (cálculo diferencial aplicado): cómo la derivada `C'(r)` encuentra el radio que minimiza el costo de material de una lata cilíndrica de volumen fijo `V`.
 
 - `infografia-lata.html` — lámina autocontenida (HTML + SVG). Ábrela en el navegador.
+- `infografia-lata.pdf` — lámina lista para entregar (una página, fuentes incrustadas).
 - `lamina.html` — misma lámina sin el esqueleto `<html>`, usada para publicarla como Artifact.
 
 ## Exportar
