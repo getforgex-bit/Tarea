@@ -1,0 +1,676 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La derivada que abarata tu lata</title>
+<meta name="description" content="Infografía de una lámina: cómo la derivada C'(r) encuentra el radio que minimiza el costo de material de una lata cilíndrica de volumen fijo.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..900&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=STIX+Two+Text:ital,wght@0,400;0,600;1,400;1,600&display=swap">
+<style>
+/* Layout: una lámina horizontal en zig-zag. Fila 1: 1 → 2 → 3; baja a la fila 2: 4 (gráfica) ← 5; franja de cierre.
+   Tema único a propósito (papel claro, alto contraste) para exportar igual a PDF/PowerPoint. */
+:root {
+  --paper: #EEF1F4;   /* hojalata muy clara */
+  --panel: #FFFFFF;
+  --ink: #0E1A2B;     /* tinta azul noche */
+  --steel: #53637A;   /* texto secundario */
+  --line: #C8D1DC;
+  --tag: #FFC62E;     /* etiqueta de precio: fórmulas clave y mínimo */
+  --down: #1D63D8;    /* C' < 0, el costo baja */
+  --up: #CF3526;      /* C' > 0, el costo sube */
+  --down-soft: #E4EDFC;
+  --up-soft: #FBE7E4;
+
+  --display: "Archivo", "Arial Narrow", "Helvetica Neue", Arial, sans-serif;
+  --body: "Atkinson Hyperlegible", "Segoe UI", Verdana, sans-serif;
+  --math: "STIX Two Text", "Cambria Math", "Times New Roman", serif;
+
+  color-scheme: light;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.4;
+  padding-inline: 16px;
+  padding-block: 24px 32px;
+}
+.sheet {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  gap: 20px;
+}
+
+/* ---------- Encabezado ---------- */
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px 32px;
+  padding-bottom: 14px;
+  border-bottom: 3px solid var(--ink);
+}
+.eyebrow {
+  font-family: var(--display);
+  font-stretch: 100%;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--steel);
+  margin: 0 0 6px;
+}
+h1 {
+  font-family: var(--display);
+  font-stretch: 112%;
+  font-weight: 900;
+  font-size: clamp(30px, 5.2vw, 58px);
+  line-height: .98;
+  letter-spacing: -.01em;
+  margin: 0;
+  text-wrap: balance;
+}
+h1 mark {
+  background: linear-gradient(transparent 58%, var(--tag) 58%, var(--tag) 92%, transparent 92%);
+  color: inherit;
+  padding: 0 .06em;
+}
+.sub {
+  font-size: 18px;
+  margin: 10px 0 0;
+  max-width: 46ch;
+}
+.pricetag {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--tag);
+  color: var(--ink);
+  font-family: var(--display);
+  font-weight: 800;
+  font-stretch: 90%;
+  font-size: 15px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding: 8px 16px 8px 26px;
+  clip-path: polygon(14px 0, 100% 0, 100% 100%, 14px 100%, 0 50%);
+  white-space: nowrap;
+}
+.pricetag::before {
+  content: "";
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--paper);
+  margin-left: -12px;
+}
+
+/* ---------- Rejilla de bloques ---------- */
+.flow {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 44px;
+}
+.b5 { grid-column: 1; grid-row: 2; }
+.b4 { grid-column: 2 / 4; grid-row: 2; }
+
+.block {
+  position: relative;
+  background: var(--panel);
+  border: 1.5px solid var(--line);
+  border-radius: 6px;
+  padding: 18px 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.block-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.num {
+  flex: none;
+  width: 30px; height: 30px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--panel);
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 15px;
+}
+h2 {
+  font-family: var(--display);
+  font-stretch: 105%;
+  font-weight: 800;
+  font-size: 19px;
+  line-height: 1.1;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+.lead {
+  margin: 0;
+  font-size: 15px;
+  color: var(--ink);
+}
+.note {
+  margin: 0;
+  font-size: 13px;
+  color: var(--steel);
+}
+
+/* Flechas de lectura (solo en escritorio) */
+.arrow {
+  position: absolute;
+  width: 34px; height: 34px;
+  display: grid; place-items: center;
+  border-radius: 50%;
+  background: var(--tag);
+  color: var(--ink);
+  border: 2px solid var(--paper);
+  z-index: 2;
+}
+.arrow svg { width: 18px; height: 18px; }
+.to-right { right: -40px; top: 50%; transform: translateY(-50%); }
+.to-down  { bottom: -40px; left: 50%; transform: translateX(-50%); }
+.to-left  { left: -40px; top: 50%; transform: translateY(-50%); }
+.to-down svg { transform: rotate(90deg); }
+.to-left svg { transform: rotate(180deg); }
+
+/* ---------- Notación matemática ---------- */
+.m { font-family: var(--math); font-style: normal; white-space: nowrap; }
+.m i { font-style: italic; }
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  font-size: .82em;
+  line-height: 1.05;
+  margin: 0 .1em;
+}
+.frac > span:first-child { border-bottom: 1.4px solid currentColor; padding: 0 .18em .06em; }
+.frac > span:last-child { padding: .06em .18em 0; }
+.root { display: inline-flex; align-items: stretch; }
+.root .rad { font-size: 1.15em; line-height: 1; margin-right: -.04em; }
+.root .radicand { border-top: 1.4px solid currentColor; padding: .12em .1em 0; }
+
+.formula {
+  background: var(--tag);
+  color: var(--ink);
+  border-radius: 4px;
+  padding: 12px 14px;
+  font-family: var(--math);
+  font-size: clamp(22px, 2.3vw, 27px);
+  line-height: 1.2;
+  text-align: center;
+  overflow-x: auto;
+}
+.formula .lbl {
+  display: block;
+  font-family: var(--display);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+/* ---------- Bloque 1: problema ---------- */
+.problem {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr);
+  gap: 14px;
+  align-items: center;
+}
+.can svg { width: 100%; height: auto; display: block; }
+.vars {
+  list-style: none;
+  margin: 0; padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.vars li {
+  display: grid;
+  grid-template-columns: 26px 22px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  line-height: 1.2;
+}
+.vars svg { width: 22px; height: 22px; display: block; }
+.vars .sym { font-family: var(--math); font-style: italic; font-size: 20px; text-align: center; }
+.vars b { font-weight: 700; }
+
+/* ---------- Bloque 2: función ---------- */
+.net {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+.net svg { width: 150px; height: auto; display: block; }
+.parts { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13.5px; }
+.parts .m { font-size: 17px; }
+.subst {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--steel);
+}
+.subst .m { font-size: 18px; color: var(--ink); }
+
+/* ---------- Bloque 3: derivada ---------- */
+.terms { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.terms li {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  font-size: 13.5px;
+  line-height: 1.25;
+}
+.terms .m {
+  font-size: 18px;
+  text-align: center;
+  border-radius: 4px;
+  padding: 4px 2px;
+}
+.terms .plus .m { background: var(--up-soft); color: var(--up); }
+.terms .minus .m { background: var(--down-soft); color: var(--down); }
+.solve {
+  border-top: 1.5px dashed var(--line);
+  padding-top: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px 12px;
+  font-family: var(--math);
+  font-size: 20px;
+}
+.solve .star {
+  background: var(--ink);
+  color: var(--tag);
+  border-radius: 4px;
+  padding: 4px 10px;
+}
+
+/* ---------- Bloque 4: gráfica ---------- */
+.chart { overflow-x: auto; }
+.chart svg { width: 100%; min-width: 460px; height: auto; display: block; }
+.chart text { font-family: var(--body); }
+.chart .mt { font-family: var(--math); }
+
+/* ---------- Bloque 5: interpretación ---------- */
+.b5 { justify-content: space-between; }
+.lens { margin: 0; padding: 0; list-style: none; display: grid; gap: 22px; }
+.lens li {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.lens svg { width: 40px; height: 40px; display: block; }
+.lens b { display: block; font-family: var(--display); font-weight: 800; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+.signs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.sign {
+  border-radius: 4px;
+  padding: 16px 6px 12px;
+  text-align: center;
+  display: grid;
+  gap: 4px;
+  justify-items: center;
+  font-size: 12.5px;
+  line-height: 1.2;
+}
+.sign svg { width: 56px; height: 33px; display: block; }
+.sign .m { font-size: 16px; }
+.sign.neg { background: var(--down-soft); color: var(--down); }
+.sign.zero { background: var(--tag); color: var(--ink); }
+.sign.pos { background: var(--up-soft); color: var(--up); }
+.sign span:last-child { font-weight: 700; }
+
+/* ---------- Franja de conclusión ---------- */
+.verdict {
+  background: var(--ink);
+  color: var(--panel);
+  border-radius: 6px;
+  padding: 20px 24px;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.2fr);
+  gap: 18px 32px;
+  align-items: center;
+}
+.verdict h2 {
+  font-size: clamp(24px, 3vw, 34px);
+  font-stretch: 112%;
+  font-weight: 900;
+  text-transform: none;
+  letter-spacing: -.005em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+.verdict h2 em { font-style: normal; color: var(--tag); }
+.verdict p { margin: 10px 0 0; font-size: 15px; color: var(--line); max-width: 48ch; }
+.verdict p .m { color: var(--panel); font-size: 17px; }
+.cans {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  align-items: end;
+  text-align: center;
+}
+.cans figure { margin: 0; display: grid; gap: 6px; justify-items: center; }
+.cans svg { height: 86px; width: auto; display: block; overflow: visible; }
+.cans figcaption { font-size: 12.5px; line-height: 1.25; color: var(--line); }
+.cans figcaption b { display: block; font-family: var(--display); font-size: 15px; color: var(--panel); }
+.cans .best figcaption b { color: var(--tag); }
+
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 4px 24px;
+  font-size: 12px;
+  color: var(--steel);
+}
+
+/* ---------- Responsivo: una columna, lectura de arriba abajo ---------- */
+@media (max-width: 900px) {
+  .flow { grid-template-columns: minmax(0, 1fr); gap: 40px; }
+  .b4, .b5 { grid-column: auto; grid-row: auto; }
+  .b4 { order: 4; } .b5 { order: 5; }
+  .to-right, .to-left, .to-down { right: auto; top: auto; left: 50%; bottom: -38px; transform: translateX(-50%); }
+  .to-right svg, .to-left svg, .to-down svg { transform: rotate(90deg); }
+  .verdict { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 460px) {
+  body { font-size: 14px; }
+  .problem { grid-template-columns: 96px minmax(0, 1fr); }
+  .net { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .signs { gap: 6px; }
+}
+
+a:focus-visible, [tabindex]:focus-visible { outline: 3px solid var(--down); outline-offset: 2px; }
+
+/* ---------- Exportación a PDF (imprimir desde el archivo local) ---------- */
+@page { size: A3 landscape; margin: 10mm; }
+@media print {
+  body { padding: 0; background: var(--paper); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sheet { max-width: none; }
+  .flow { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; gap: 44px !important; }
+  .b5 { grid-column: 1 !important; grid-row: 2 !important; }
+  .b4 { grid-column: 2 / 4 !important; grid-row: 2 !important; }
+  .verdict { grid-template-columns: minmax(0, 1.05fr) minmax(0, 1.2fr) !important; }
+  .block, .verdict { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+
+<main class="sheet">
+
+  <!-- ENCABEZADO -->
+  <header class="head">
+    <div>
+      <p class="eyebrow">Cálculo diferencial · Optimización</p>
+      <h1>La derivada que <mark>abarata</mark> tu&nbsp;lata</h1>
+      <p class="sub">Volumen fijo <span class="m"><i>V</i></span>. ¿Qué radio <span class="m"><i>r</i></span> gasta menos lámina?</p>
+    </div>
+    <span class="pricetag">Costo mínimo en <span class="m" style="text-transform:none;font-size:18px;">C′(<i>r</i>) = 0</span></span>
+  </header>
+
+  <div class="flow">
+
+    <!-- 1 · PROBLEMA -->
+    <section class="block b1" aria-labelledby="t1">
+      <div class="block-head"><span class="num">1</span><h2 id="t1">Problema</h2></div>
+      <p class="lead">Misma capacidad, muchas formas posibles. ¿Cuál usa menos material?</p>
+      <div class="problem">
+        <div class="can">
+          <svg viewBox="0 0 140 190" role="img" aria-label="Lata cilíndrica con el radio r marcado en la tapa y la altura h en el costado">
+            <!-- cuerpo -->
+            <path d="M22 40 L22 150 A46 14 0 0 0 114 150 L114 40" fill="#DCE3EB" stroke="#0E1A2B" stroke-width="2.5"/>
+            <!-- brillo de hojalata -->
+            <rect x="36" y="44" width="10" height="104" fill="#FFFFFF" opacity=".75"/>
+            <rect x="92" y="44" width="5" height="104" fill="#FFFFFF" opacity=".5"/>
+            <!-- etiqueta -->
+            <path d="M22 78 A46 14 0 0 0 114 78 L114 112 A46 14 0 0 1 22 112 Z" fill="#FFC62E" stroke="#0E1A2B" stroke-width="1.5"/>
+            <!-- tapa -->
+            <ellipse cx="68" cy="40" rx="46" ry="14" fill="#F4F7FA" stroke="#0E1A2B" stroke-width="2.5"/>
+            <ellipse cx="68" cy="40" rx="38" ry="10.5" fill="none" stroke="#9AA7B6" stroke-width="1.2"/>
+            <!-- radio -->
+            <circle cx="68" cy="40" r="2.8" fill="#0E1A2B"/>
+            <line x1="68" y1="40" x2="112" y2="40" stroke="#1D63D8" stroke-width="2.5"/>
+            <path d="M106 36 L113 40 L106 44" fill="none" stroke="#1D63D8" stroke-width="2.5"/>
+            <text x="86" y="31" font-family="STIX Two Text, Times New Roman, serif" font-style="italic" font-size="20" fill="#1D63D8" text-anchor="middle">r</text>
+            <!-- altura -->
+            <line x1="128" y1="40" x2="128" y2="150" stroke="#CF3526" stroke-width="2.5"/>
+            <line x1="120" y1="40" x2="134" y2="40" stroke="#CF3526" stroke-width="2"/>
+            <line x1="120" y1="150" x2="134" y2="150" stroke="#CF3526" stroke-width="2"/>
+            <path d="M124 48 L128 41 L132 48 M124 142 L128 149 L132 142" fill="none" stroke="#CF3526" stroke-width="2"/>
+            <rect x="120" y="85" width="16" height="22" fill="#FFFFFF"/>
+            <text x="128" y="102" font-family="STIX Two Text, Times New Roman, serif" font-style="italic" font-size="20" fill="#CF3526" text-anchor="middle">h</text>
+            <text x="68" y="100" font-family="STIX Two Text, Times New Roman, serif" font-style="italic" font-size="18" fill="#0E1A2B" text-anchor="middle">V</text>
+          </svg>
+        </div>
+        <ul class="vars">
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12h18M16 7l5 5-5 5" fill="none" stroke="#1D63D8" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><circle cx="3.5" cy="12" r="2" fill="#1D63D8"/></svg>
+            <span class="sym" style="color:#1D63D8">r</span>
+            <span><b>radio</b> · lo que decides</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v18M7 8l5-5 5 5M7 16l5 5 5-5" fill="none" stroke="#CF3526" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="sym" style="color:#CF3526">h</span>
+            <span><b>altura</b> · depende de <span class="m"><i>r</i></span></span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.5 4.6 6 8 6 11a6 6 0 0 1-12 0c0-3 2.5-6.4 6-11z" fill="#DCE3EB" stroke="#0E1A2B" stroke-width="2" stroke-linejoin="round"/></svg>
+            <span class="sym">V</span>
+            <span><b>volumen</b> · fijo</span>
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12 10 5h11v14H10z" fill="#FFC62E" stroke="#0E1A2B" stroke-width="2" stroke-linejoin="round"/><circle cx="10.5" cy="12" r="1.8" fill="#0E1A2B"/></svg>
+            <span class="sym">C</span>
+            <span><b>costo</b> · área de lámina</span>
+          </li>
+        </ul>
+      </div>
+      <span class="arrow to-right" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </section>
+
+    <!-- 2 · FUNCIÓN -->
+    <section class="block b2" aria-labelledby="t2">
+      <div class="block-head"><span class="num">2</span><h2 id="t2">Función de costo</h2></div>
+      <p class="lead">Desenrolla la lata: el costo es la lámina que gastas.</p>
+      <div class="net">
+        <svg viewBox="0 0 160 110" role="img" aria-label="Lata desenrollada: dos círculos de radio r (tapa y fondo) y un rectángulo de base 2πr y altura h (pared)">
+          <circle cx="22" cy="24" r="18" fill="#F4F7FA" stroke="#0E1A2B" stroke-width="2"/>
+          <circle cx="22" cy="80" r="18" fill="#F4F7FA" stroke="#0E1A2B" stroke-width="2"/>
+          <line x1="22" y1="24" x2="40" y2="24" stroke="#1D63D8" stroke-width="2"/>
+          <line x1="22" y1="80" x2="40" y2="80" stroke="#1D63D8" stroke-width="2"/>
+          <rect x="52" y="10" width="102" height="72" fill="#FFC62E" stroke="#0E1A2B" stroke-width="2"/>
+          <text x="103" y="102" font-family="STIX Two Text, Times New Roman, serif" font-size="15" fill="#0E1A2B" text-anchor="middle">2π<tspan font-style="italic">r</tspan></text>
+          <line x1="54" y1="89" x2="152" y2="89" stroke="#0E1A2B" stroke-width="1.2"/>
+          <text x="103" y="52" font-family="STIX Two Text, Times New Roman, serif" font-style="italic" font-size="18" fill="#CF3526" text-anchor="middle">h</text>
+        </svg>
+        <ul class="parts">
+          <li>Tapa + fondo<br><span class="m">2π<i>r</i>²</span></li>
+          <li>Pared<br><span class="m">2π<i>r</i> · <i>h</i></span></li>
+        </ul>
+      </div>
+      <div class="subst">
+        Como <span class="m"><i>h</i> = <span class="frac"><span><i>V</i></span><span>π<i>r</i>²</span></span></span> queda:
+      </div>
+      <div class="formula">
+        <span class="lbl">Costo</span>
+        <span class="m"><i>C</i>(<i>r</i>) = 2π<i>r</i>² + <span class="frac"><span>2<i>V</i></span><span><i>r</i></span></span></span>
+      </div>
+      <p class="note">Modelo simplificado: costo proporcional al área, <span class="m"><i>k</i> = 1</span>.</p>
+      <span class="arrow to-right" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </section>
+
+    <!-- 3 · DERIVADA -->
+    <section class="block b3" aria-labelledby="t3">
+      <div class="block-head"><span class="num">3</span><h2 id="t3">Derivada</h2></div>
+      <div class="formula">
+        <span class="lbl">Razón de cambio del costo</span>
+        <span class="m"><i>C</i>′(<i>r</i>) = 4π<i>r</i> − <span class="frac"><span>2<i>V</i></span><span><i>r</i>²</span></span></span>
+      </div>
+      <ul class="terms">
+        <li class="plus"><span class="m">+4π<i>r</i></span><span>Tapas más grandes: el costo <b>sube</b>.</span></li>
+        <li class="minus"><span class="m">−<span class="frac"><span>2<i>V</i></span><span><i>r</i>²</span></span></span><span>Pared más baja: el costo <b>baja</b>.</span></li>
+      </ul>
+      <div class="solve">
+        <span class="m"><i>C</i>′(<i>r</i>) = 0</span>
+        <span aria-hidden="true">⇒</span>
+        <span class="m"><i>r</i>³ = <span class="frac"><span><i>V</i></span><span>2π</span></span></span>
+        <span aria-hidden="true">⇒</span>
+        <span class="m star"><i>r</i>* = <span class="root"><span class="rad">∛</span><span class="radicand"><span class="frac"><span><i>V</i></span><span>2π</span></span></span></span></span>
+      </div>
+      <span class="arrow to-down" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </section>
+
+    <!-- 4 · GRÁFICA -->
+    <section class="block b4" aria-labelledby="t4">
+      <div class="block-head"><span class="num">4</span><h2 id="t4">Gráfica: el fondo del valle</h2></div>
+      <div class="chart">
+        <svg viewBox="0 0 660 372" role="img" aria-label="Curva de costo C(r) con forma de valle. A la izquierda del mínimo la curva baja y su tangente tiene pendiente negativa; en r* la tangente es horizontal y C'(r) = 0; a la derecha la curva sube y la tangente tiene pendiente positiva.">
+          <!-- zonas -->
+          <rect x="60" y="20" width="191.8" height="310" fill="#E4EDFC" opacity=".55"/>
+          <rect x="251.8" y="20" width="366" height="310" fill="#FBE7E4" opacity=".55"/>
+          <text x="80" y="318" font-size="14" font-weight="700" fill="#1D63D8">C′ &lt; 0 · el costo baja</text>
+          <text x="600" y="318" font-size="14" font-weight="700" fill="#CF3526" text-anchor="end">C′ &gt; 0 · el costo sube</text>
+
+          <!-- ejes -->
+          <line x1="60" y1="330" x2="632" y2="330" stroke="#0E1A2B" stroke-width="2"/>
+          <path d="M624 324 L634 330 L624 336" fill="none" stroke="#0E1A2B" stroke-width="2"/>
+          <line x1="60" y1="330" x2="60" y2="14" stroke="#0E1A2B" stroke-width="2"/>
+          <path d="M54 22 L60 12 L66 22" fill="none" stroke="#0E1A2B" stroke-width="2"/>
+          <text x="632" y="354" class="mt" font-size="18" fill="#0E1A2B" text-anchor="end"><tspan font-style="italic">r</tspan> <tspan font-family="Atkinson Hyperlegible, Verdana, sans-serif" font-size="13" fill="#53637A">(radio)</tspan></text>
+          <text x="72" y="30" class="mt" font-size="18" fill="#0E1A2B"><tspan font-style="italic">C</tspan>(<tspan font-style="italic">r</tspan>) <tspan font-family="Atkinson Hyperlegible, Verdana, sans-serif" font-size="13" fill="#53637A">(costo)</tspan></text>
+
+          <!-- guía del mínimo -->
+          <line x1="251.8" y1="261.4" x2="251.8" y2="330" stroke="#0E1A2B" stroke-width="1.4" stroke-dasharray="4 4"/>
+          <text x="251.8" y="354" class="mt" font-size="17" fill="#0E1A2B" text-anchor="middle"><tspan font-style="italic">r</tspan>* = ∛(<tspan font-style="italic">V</tspan>/2π)</text>
+
+          <!-- curva: azul donde baja, roja donde sube -->
+          <path d="M70.0 49.4 L72.3 58.8 L74.5 67.8 L76.8 76.4 L79.1 84.5 L81.4 92.3 L83.6 99.7 L85.9 106.8 L88.2 113.5 L90.5 120.0 L92.7 126.2 L95.0 132.1 L97.3 137.7 L99.5 143.2 L101.8 148.4 L104.1 153.4 L106.4 158.1 L108.6 162.7 L110.9 167.1 L113.2 171.4 L115.5 175.4 L117.7 179.4 L120.0 183.1 L122.3 186.7 L124.6 190.2 L126.8 193.5 L129.1 196.7 L131.4 199.8 L133.6 202.8 L135.9 205.7 L138.2 208.4 L140.5 211.1 L142.7 213.6 L145.0 216.0 L147.3 218.4 L149.6 220.7 L151.8 222.8 L154.1 224.9 L156.4 226.9 L158.6 228.9 L160.9 230.7 L163.2 232.5 L165.5 234.2 L167.7 235.9 L170.0 237.4 L172.3 238.9 L174.6 240.4 L176.8 241.8 L179.1 243.1 L181.4 244.4 L183.6 245.6 L185.9 246.7 L188.2 247.8 L190.5 248.9 L192.7 249.9 L195.0 250.8 L197.3 251.7 L199.6 252.6 L201.8 253.4 L204.1 254.2 L206.4 254.9 L208.7 255.6 L210.9 256.2 L213.2 256.8 L215.5 257.3 L217.7 257.9 L220.0 258.3 L222.3 258.8 L224.6 259.2 L226.8 259.6 L229.1 259.9 L231.4 260.2 L233.7 260.4 L235.9 260.7 L238.2 260.9 L240.5 261.0 L242.7 261.2 L245.0 261.3 L247.3 261.4 L249.6 261.4 L251.8 261.4" fill="none" stroke="#1D63D8" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M251.8 261.4 L256.3 261.4 L260.8 261.2 L265.3 260.9 L269.7 260.6 L274.2 260.1 L278.7 259.5 L283.2 258.9 L287.7 258.1 L292.1 257.3 L296.6 256.3 L301.1 255.3 L305.6 254.2 L310.0 253.0 L314.5 251.8 L319.0 250.5 L323.5 249.0 L327.9 247.6 L332.4 246.0 L336.9 244.4 L341.4 242.7 L345.9 240.9 L350.3 239.1 L354.8 237.1 L359.3 235.2 L363.8 233.1 L368.2 231.0 L372.7 228.9 L377.2 226.6 L381.7 224.4 L386.1 222.0 L390.6 219.6 L395.1 217.1 L399.6 214.6 L404.1 212.0 L408.5 209.4 L413.0 206.7 L417.5 203.9 L422.0 201.1 L426.4 198.2 L430.9 195.3 L435.4 192.3 L439.9 189.3 L444.3 186.2 L448.8 183.1 L453.3 179.9 L457.8 176.7 L462.3 173.4 L466.7 170.0 L471.2 166.6 L475.7 163.2 L480.2 159.7 L484.6 156.2 L489.1 152.6 L493.6 148.9 L498.1 145.2 L502.6 141.5 L507.0 137.7 L511.5 133.9 L516.0 130.0 L520.5 126.1 L524.9 122.1 L529.4 118.1 L533.9 114.0 L538.4 109.9 L542.8 105.7 L547.3 101.5 L551.8 97.3 L556.3 93.0 L560.8 88.6 L565.2 84.3 L569.7 79.8 L574.2 75.4 L578.7 70.8 L583.1 66.3 L587.6 61.6 L592.1 57.0 L596.6 52.3 L601.0 47.6 L605.5 42.8 L610.0 37.9" fill="none" stroke="#CF3526" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+
+          <!-- tangente con pendiente negativa -->
+          <line x1="92.0" y1="162.2" x2="180.2" y2="251.9" stroke="#1D63D8" stroke-width="2" stroke-dasharray="7 5"/>
+          <circle cx="147.1" cy="218.3" r="5" fill="#FFFFFF" stroke="#1D63D8" stroke-width="2.5"/>
+          <text x="70" y="272" font-size="13.5" fill="#1D63D8">pendiente &lt; 0</text>
+
+          <!-- tangente con pendiente positiva -->
+          <line x1="362.0" y1="240.7" x2="499.8" y2="149.9" stroke="#CF3526" stroke-width="2" stroke-dasharray="7 5"/>
+          <circle cx="430.9" cy="195.3" r="5" fill="#FFFFFF" stroke="#CF3526" stroke-width="2.5"/>
+          <text x="447" y="214" font-size="13.5" fill="#CF3526">pendiente &gt; 0</text>
+
+          <!-- tangente horizontal en el mínimo -->
+          <line x1="168" y1="261.4" x2="336" y2="261.4" stroke="#0E1A2B" stroke-width="7" stroke-linecap="round"/>
+          <line x1="168" y1="261.4" x2="336" y2="261.4" stroke="#FFC62E" stroke-width="4" stroke-linecap="round"/>
+          <circle cx="251.8" cy="261.4" r="8" fill="#FFC62E" stroke="#0E1A2B" stroke-width="3"/>
+
+          <!-- globo C'(r) = 0 -->
+          <g>
+            <path d="M200 148 h104 a6 6 0 0 1 6 6 v30 a6 6 0 0 1 -6 6 h-42 l-10 14 l-10 -14 h-42 a6 6 0 0 1 -6 -6 v-30 a6 6 0 0 1 6 -6 z" fill="#0E1A2B"/>
+            <text x="252" y="175" class="mt" font-size="19" fill="#FFC62E" text-anchor="middle"><tspan font-style="italic">C</tspan>′(<tspan font-style="italic">r</tspan>) = 0</text>
+          </g>
+          <text x="252" y="288" font-size="13" font-weight="700" fill="#0E1A2B" text-anchor="middle">tangente horizontal · costo mínimo</text>
+        </svg>
+      </div>
+      <span class="arrow to-left" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </section>
+
+    <!-- 5 · INTERPRETACIÓN -->
+    <section class="block b5" aria-labelledby="t5">
+      <div class="block-head"><span class="num">5</span><h2 id="t5">Interpretación</h2></div>
+      <ul class="lens">
+        <li>
+          <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="6" fill="#EEF1F4"/><path d="M6 10 Q20 44 34 10" fill="none" stroke="#0E1A2B" stroke-width="2.4"/><line x1="4" y1="11" x2="22" y2="31" stroke="#1D63D8" stroke-width="2.4"/><circle cx="12.4" cy="20.6" r="2.6" fill="#1D63D8"/></svg>
+          <span><b>Geométrica</b><span class="m"><i>C</i>′(<i>r</i>)</span> es la pendiente de la tangente a la curva.</span>
+        </li>
+        <li>
+          <svg viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="6" fill="#EEF1F4"/><path d="M8 27a12 12 0 0 1 24 0" fill="none" stroke="#0E1A2B" stroke-width="2.4"/><line x1="20" y1="27" x2="28" y2="17" stroke="#CF3526" stroke-width="2.6" stroke-linecap="round"/><circle cx="20" cy="27" r="2.6" fill="#0E1A2B"/></svg>
+          <span><b>Física</b>Cuánto cambia el costo por cada poquito extra de radio.</span>
+        </li>
+      </ul>
+      <div class="signs" role="list">
+        <div class="sign neg" role="listitem">
+          <svg viewBox="0 0 44 26" aria-hidden="true"><path d="M4 4 L40 22" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M32 22 H40 V14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="m"><i>C</i>′ &lt; 0</span><span>baja</span>
+        </div>
+        <div class="sign zero" role="listitem">
+          <svg viewBox="0 0 44 26" aria-hidden="true"><path d="M4 13 H40" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><circle cx="22" cy="13" r="4.5" fill="#0E1A2B"/></svg>
+          <span class="m"><i>C</i>′ = 0</span><span>mínimo</span>
+        </div>
+        <div class="sign pos" role="listitem">
+          <svg viewBox="0 0 44 26" aria-hidden="true"><path d="M4 22 L40 4" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M32 4 H40 V12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span class="m"><i>C</i>′ &gt; 0</span><span>sube</span>
+        </div>
+      </div>
+      <p class="note">En el mínimo el costo deja de bajar y empieza a subir.</p>
+      <span class="arrow to-down" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </section>
+
+  </div>
+
+  <!-- CONCLUSIÓN -->
+  <section class="verdict" aria-labelledby="t6">
+    <div>
+      <h2 id="t6"><em>Altura = diámetro:</em> la lata más barata</h2>
+      <p>Con <span class="m"><i>r</i>*</span> se cumple <span class="m"><i>h</i> = <span class="frac"><span><i>V</i></span><span>π<i>r</i>*²</span></span> = 2<i>r</i>*</span>. La fábrica corta la menor lámina posible para ese volumen.</p>
+    </div>
+    <div class="cans" role="list" aria-label="Tres latas con el mismo volumen">
+      <figure role="listitem">
+        <svg viewBox="0 0 40 86" aria-hidden="true">
+          <path d="M3.5 5 V81 A16.5 4 0 0 0 36.5 81 V5" fill="#DCE3EB" stroke="#EEF1F4" stroke-width="2"/>
+          <ellipse cx="20" cy="5" rx="16.5" ry="4" fill="#FFFFFF" stroke="#EEF1F4" stroke-width="2"/>
+        </svg>
+        <figcaption><b>+8 %</b>lámina · angosta</figcaption>
+      </figure>
+      <figure role="listitem" class="best">
+        <svg viewBox="0 0 48 86" aria-hidden="true">
+          <path d="M2 38 V82 A22 5 0 0 0 46 82 V38" fill="#FFC62E" stroke="#FFC62E" stroke-width="2"/>
+          <ellipse cx="24" cy="38" rx="22" ry="5" fill="#FFE59A" stroke="#FFC62E" stroke-width="2"/>
+        </svg>
+        <figcaption><b><span class="m"><i>h</i> = 2<i>r</i></span></b>mínimo</figcaption>
+      </figure>
+      <figure role="listitem">
+        <svg viewBox="0 0 74 86" aria-hidden="true">
+          <path d="M2 64 V82 A35 6 0 0 0 72 82 V64" fill="#DCE3EB" stroke="#EEF1F4" stroke-width="2"/>
+          <ellipse cx="37" cy="64" rx="35" ry="6" fill="#FFFFFF" stroke="#EEF1F4" stroke-width="2"/>
+        </svg>
+        <figcaption><b>+27 %</b>lámina · chaparra</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <span>Las tres latas tienen el mismo volumen <span class="m"><i>V</i></span>; angosta: <span class="m"><i>r</i> = 0.75 <i>r</i>*</span>, chaparra: <span class="m"><i>r</i> = 1.6 <i>r</i>*</span>.</span>
+    <span>Gráfica cualitativa: <span class="m"><i>V</i></span> se deja como parámetro.</span>
+  </footer>
+
+</main>
+</body>
+</html>
